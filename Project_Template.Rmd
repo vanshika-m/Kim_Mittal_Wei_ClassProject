@@ -37,6 +37,22 @@ palm_production<-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
 palm_indonesia<-read.csv("./Indonesia_oil_palm_concessions.csv",stringsAsFactors = TRUE)
 palm_malaysia <-read.csv("./Oil Palm Planted Area Malaysia 2018.csv",stringsAsFactors = TRUE)
 global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
+birdprioritization = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/birdprioritization.tif"))
+mammalprioritization = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/mammalprioritization.tif"))
+
+?here
+
+suitableareapresent = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/suitableareapresent.tif"))
+suitablearea2080 = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/suitablearea2080.tif"))
+
+vulnerableforestpresent = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/vulnerableforestpresent.tif"))
+vulnerableforest2080 = raster(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/vulnerableforest2080.tif"))
+
+
+
+
+oilpalmsamples <- st_read(here("Biodiversity GIS data from Duke PhD doi_10/Vijay_et_al_2016_oilpalm_GISdata/oilpalmsamplesites.shp"))
+gfw_oil_palm <- st_read(here("gfw_oil_palm_v20191031.shp"))
 
 ```
 

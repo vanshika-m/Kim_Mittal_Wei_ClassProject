@@ -30,7 +30,7 @@ plot.title=element_text(color='black',size=15),
 legend.position="right",
 legend.text = element_text(size=11)
 )
-
+ 
 # Load your datasets
 palm_imports<-read.csv("./palm-oil-imports.csv",stringsAsFactors=TRUE)
 palm_production<-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)

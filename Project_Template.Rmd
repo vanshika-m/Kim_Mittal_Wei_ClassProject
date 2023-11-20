@@ -8,12 +8,35 @@
 
 ```{r setup, include=FALSE}
 # Set your working directory
-
+getwd()
 # Load your packages
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(raster)
+library(here)
+library(sf)
+library(leaflet)
+library(agricolae)
+library(rvest)
+library(vctrs)
+library(mapview)
 
 # Set your ggplot theme
+mytheme<-theme_classic(base_size=13)+
+theme(
+legend.background = element_rect(color='grey',fill='beige'),
+plot.title=element_text(color='black',size=15),
+legend.position="right",
+legend.text = element_text(size=11)
+)
 
 # Load your datasets
+palm_imports<-read.csv("./palm-oil-imports.csv",stringsAsFactors=TRUE)
+palm_production<-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
+palm_indonesia<-read.csv("./Indonesia_oil_palm_concessions.csv",stringsAsFactors = TRUE)
+palm_malaysia <-read.csv("./Oil Palm Planted Area Malaysia 2018.csv",stringsAsFactors = TRUE)
+global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
 
 ```
 

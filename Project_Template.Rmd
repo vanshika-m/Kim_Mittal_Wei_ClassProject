@@ -33,26 +33,31 @@ legend.text = element_text(size=11)
  
 # Load your datasets
 palm_imports<-read.csv("./palm-oil-imports.csv",stringsAsFactors=TRUE)
+
 palm_production_ts<-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
 #filtering for only Indonesia and Malaysia 
 palm_production_ts <- palm_production_ts %>%
   select(Entity, Year, Palm.oil...00000257....Production...005510....tonnes)%>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")
 
-#ploting over the years to see the trend 
-palm_years_graph <- ggplot(palm_production_ts, aes(x=Year, y = Palm.oil...00000257....Production...005510....tonnes, color = Entity)) + 
+#plotting over the years to see the trend 
+palm_production_graph <- ggplot(palm_production_ts, aes(x=Year, y = Palm.oil...00000257....Production...005510....tonnes, color = Entity)) + 
   geom_point()+ 
   geom_smooth(method = lm)+ 
-  labs(x= "Years", y = "Palm Oil Production (tonnes)")
+  labs(x= "Years", y = "Palm Oil Production (tonnes)", title = "Palm Production in Indonesia and Malaysia over the years")
   
-
 palm_indonesia<-read.csv("./Indonesia_oil_palm_concessions.csv",stringsAsFactors = TRUE)
 palm_malaysia <-read.csv("./Oil Palm Planted Area Malaysia 2018.csv",stringsAsFactors = TRUE)
-global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
 
+global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
+global_price$DATE <- ymd(global_price$DATE)
+global_price_graph <- ggplot(global_price, aes(x= DATE, y = PPOILUSDM))+
+  geom_point()+
+  geom_smooth(method = lm)+
+   labs(x= "Years", y = "Global Price Levels", title = "Plam Oil Global Price Trends")
 
 birdprioritization = raster("./birdprioritization.tif")
-plot(birdprioritization)
+plot(birdprioritization) 
 
 mammalprioritization = raster("./mammalprioritization.tif")
 plot(mammalprioritization)

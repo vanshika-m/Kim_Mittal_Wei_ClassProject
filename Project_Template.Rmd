@@ -38,9 +38,9 @@ legend.text = element_text(size=11)
 #dataset on palm cultivation 
 palm_production <-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
 #filtering for only Indonesia and Malaysia 
-palm_production_ts <- palm_production_ts %>%
+palm_production <- palm_production %>%
   select(Entity, Year, Palm.oil...00000257....Production...005510....tonnes)%>%
-  filter(Entity == "Indonesia"| Entity == "Malaysia")
+  filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))
 
 #plotting over the years to see the trend 
 options(scipen = 999)
@@ -49,31 +49,21 @@ palm_production_graph <- ggplot(palm_production_ts, aes(x=Year, y = Palm.oil...0
   geom_smooth(method = lm)+ 
   labs(x= "Years", y = "Palm Oil Production (tonnes)", title = "Palm Production in Indonesia and Malaysia over the years")
 
-#scientific notation on the y-axis needs to be checked 
-
 #dataset on forest area 
-forest_area_ind <- read.csv("./environment_idn.csv",stringsAsFactors = TRUE, skip = 1)
-forest_area_ind <- forest_area_ind %>%
-  filter(X.indicator.code == "AG.LND.FRST.K2") %>%
-  select(X.country.name, X.date.year, X.indicator.value.num)
+forest_area <- read.csv("./forest-area-primary-planted.csv",stringsAsFactors = TRUE)
+forest_area <- forest_area %>%
+  filter(Entity == "Indonesia" | Entity == "Malaysia") %>%
+  rename(Planted.Forest = Planted.Forest...00006716....Area...005110....hectares ) %>%
+  rename(Natural.Forest = Naturally.regenerating.forest...00006717....Area...005110....hectares)%>%
+  select(Entity, Year, Planted.Forest, Natural.Forest)
 
-forest_area_ind$forest_area <- forest_area_ind$X.indicator.value.num 
-forest_area_ind$X.indicator.value.num <- NULL
-
-forest_area_mly <- read.csv("./environment_mys.csv", stringsAsFactors = TRUE, skip = 1)
-forest_area_mly <- forest_area_mly %>%
-  filter(X.indicator.code == "AG.LND.FRST.K2") %>%
-  select(X.country.name, X.date.year, X.indicator.value.num)
-
-forest_area_mly$forest_area <- forest_area_mly$X.indicator.value.num 
-forest_area_mly$X.indicator.value.num <- NULL
-
-forest_area <- rbind(forest_area_ind,forest_area_mly)
-
-forest_area_graph <- ggplot(forest_area, aes(x=X.date.year, y = forest_area, color = X.country.name)) + 
-  geom_point()+ 
-  geom_smooth(method = lm)+ 
-  labs(x= "Years", y = "Forest Area (sq. km)", title = "Forest Area over the years")
+#graphing the data 
+forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
+                     geom_line(aes( y = Planted.Forest), color = "green") + 
+                     geom_line(aes(y = Natural.Forest, color = "red")) + 
+                    facet_wrap(vars(Entity))
+                    labs(x= "Years", y = "Forest Area (sq. km)", title = 
+                           "Forest Area over the years")
 
 #datasets on carbon emissions 
 carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
@@ -88,7 +78,7 @@ carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = Greenhouse.ga
 ```
 
 ```{r}
-#Data set on global prices 
+#Data set on global prices (extra)
 global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
 global_price$DATE <- ymd(global_price$DATE)
 global_price_graph <- ggplot(global_price, aes(x= DATE, y = PPOILUSDM))+
@@ -97,13 +87,15 @@ global_price_graph <- ggplot(global_price, aes(x= DATE, y = PPOILUSDM))+
    labs(x= "Years", y = "Global Price Levels", title = "Plam Oil Global Price Trends")
 ```
 
-
-
-
-
+```{r}
+#merge the datasets into one for analysis 
+merged_dataset <- merge(palm_production, forest_area, by = c("Entity", "Year"), 
+                 all = TRUE)
+dataset <- merge(merged_dataset, carbon_emissions, by = c("Entity", "Year"), 
+                 all = TRUE)
 ```
 
-
+```
 # Rationale and Research Questions
 
 

@@ -40,14 +40,8 @@ palm_production <-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
 #filtering for only Indonesia and Malaysia 
 palm_production <- palm_production %>%
   select(Entity, Year, Palm.oil...00000257....Production...005510....tonnes)%>%
-  filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))
-
-#plotting over the years to see the trend 
-options(scipen = 999)
-palm_production_graph <- ggplot(palm_production_ts, aes(x=Year, y = Palm.oil...00000257....Production...005510....tonnes, color = Entity)) + 
-  geom_point()+ 
-  geom_smooth(method = lm)+ 
-  labs(x= "Years", y = "Palm Oil Production (tonnes)", title = "Palm Production in Indonesia and Malaysia over the years")
+  filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))%>%
+  rename(Oil.Palm = Palm.oil...00000257....Production...005510....tonnes)
 
 #dataset on forest area 
 forest_area <- read.csv("./forest-area-primary-planted.csv",stringsAsFactors = TRUE)
@@ -57,24 +51,11 @@ forest_area <- forest_area %>%
   rename(Natural.Forest = Naturally.regenerating.forest...00006717....Area...005110....hectares)%>%
   select(Entity, Year, Planted.Forest, Natural.Forest)
 
-#graphing the data 
-forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
-                     geom_line(aes( y = Planted.Forest), color = "green") + 
-                     geom_line(aes(y = Natural.Forest, color = "red")) + 
-                    facet_wrap(vars(Entity))
-                    labs(x= "Years", y = "Forest Area (sq. km)", title = 
-                           "Forest Area over the years")
-
 #datasets on carbon emissions 
 carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
 carbon_emissions <- carbon_emissions %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
   select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)
-
-carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = Greenhouse.gas.emissions.from.land.use.change.and.forestry, color = Entity)) + 
-  geom_point()+ 
-  geom_smooth(method = lm)+ 
-  labs(x= "Years", y = "Carbon Dioxide Emissions (billion tonnes)", title = "Carbon Dioxide Emissions over the years")
 ```
 
 ```{r}
@@ -93,11 +74,11 @@ merged_dataset <- merge(palm_production, forest_area, by = c("Entity", "Year"),
                  all = TRUE)
 dataset <- merge(merged_dataset, carbon_emissions, by = c("Entity", "Year"), 
                  all = TRUE)
+dataset <- dataset %>%
+  mutate(Total.Forest = Planted.Forest + Natural.Forest)
 ```
 
-```
 # Rationale and Research Questions
-
 
 
 \newpage
@@ -110,12 +91,105 @@ dataset <- merge(merged_dataset, carbon_emissions, by = c("Entity", "Year"),
 
 # Exploratory Analysis 
 
-
-
+```{r}
+#plotting oil palm cultivation over the years to see the trend 
+options(scipen = 999)
+palm_production_graph <- ggplot(palm_production, aes(x=Year, y = Oil.Palm, color = Entity)) + 
+  geom_point()+ 
+  geom_smooth(method = lm)+ 
+  labs(x= "Years", y = "Palm Oil Production (tonnes)", title = "Palm Production in Indonesia and Malaysia over the years")
+  
+#graphing the data on forest area 
+forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
+                     geom_line(aes( y = Planted.Forest), color = "green") + 
+                     geom_line(aes(y = Natural.Forest, color = "red")) + 
+                    facet_wrap(vars(Entity))
+                    labs(x= "Years", y = "Forest Area (sq. km)", title = 
+                           "Forest Area over the years")
+                           
+#graphing dataset on carbon emissions 
+carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = Greenhouse.gas.emissions.from.land.use.change.and.forestry, color = Entity)) + 
+  geom_point()+ 
+  geom_smooth(method = lm)+ 
+  labs(x= "Years", y = "Carbon Dioxide Emissions (billion tonnes)", title = "Carbon Dioxide Emissions over the years")
+```
 \newpage
 
 # Analysis
+```{r}
+#MULTIPLE LINEAR REGRESSION
+#Planted Forests in Indonesia 
+#oil_palm_ind <- lm(data = filter(dataset, Entity == "Indonesia") , Planted.Forest ~ Oil.Palm)
+#summary(oil_palm_ind)
 
+# #Total Forests in Indonesia
+# oil_palm_ind2 <- lm(data = filter(dataset, Entity == "Indonesia") , 
+#                   Total.Forest ~ Oil.Palm)
+# summary(oil_palm_ind2)
+# 
+# #Planted Forests in Malaysia 
+# oil_palm_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+#                   Planted.Forest ~ Oil.Palm)
+# summary(oil_palm_mly)
+# 
+# #Total Forests in Malaysia
+# oil_palm_mly2 <- lm(data = filter(dataset, Entity == "Malaysia") , 
+#                   Total.Forest ~ Oil.Palm)
+# summary(oil_palm_mly2)
+
+#checking the explanatory variables for natural forest 
+AIC <- lm(data = dataset, Natural.Forest ~ Year + Oil.Palm)
+step(AIC)
+#include all - lowest AIC 
+
+#Natural Forests in Indonesia 
+oil_palm_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
+                  Total.Forest ~ Oil.Palm + Year)
+summary(oil_palm_ind)
+
+#Natural Forests in Malaysia
+oil_palm_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+                  Natural.Forest ~ Oil.Palm + Year)
+summary(oil_palm_mly)
+
+#checking the explanatory variables for CO2 emissions and natural forest 
+AIC <- lm(data = dataset, Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
+step(AIC)
+#include All - lowest AIC 
+
+#MLR in CO2 with natural forests ~ low R2 
+CO2_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
+                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
+summary(CO2_ind)
+
+CO2_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
+summary(CO2_mly)
+
+#testing CO2 with total forests ~ malaysia has an okay R2 
+co2_ind_test <- lm(data = filter(dataset, Entity == "Indonesia") , 
+                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Total.Forest + Oil.Palm + Year)
+summary(co2_ind_test)
+
+co2_mly_test <- lm(data = filter(dataset, Entity == "Malaysia") , 
+                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Total.Forest + Oil.Palm + Year)
+summary(co2_mly_test)
+```
+
+```{r}
+dataset_ind <- dataset %>%
+  subset(Entity == "Indonesia") %>%
+  mutate(Date = paste(Year, "-", 01, "-", 01))
+dataset_ind$Date <- ymd(dataset_ind$Date)
+
+#TIME SERIES ANALYSIS 
+natural_forest_ts <- ts(dataset_ind$Natural.Forest, start = c(1990,01,01))
+natural_forest_decomp <- stl(natural_forest_ts, s.window = "periodic")
+plot(natural_forest_decomp)
+
+natural_forest_decomp_test <- decompose(natural_forest_ts)
+plot(natural_forest_decomp_test)
+```
 
 
 ## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>

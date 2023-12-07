@@ -55,7 +55,8 @@ forest_area <- forest_area %>%
 carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
 carbon_emissions <- carbon_emissions %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
-  select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)
+  select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)%>%
+  rename(CO2.emissions = Greenhouse.gas.emissions.from.land.use.change.and.forestry)
 ```
 
 ```{r}
@@ -108,7 +109,7 @@ forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
                            "Forest Area over the years")
                            
 #graphing dataset on carbon emissions 
-carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = Greenhouse.gas.emissions.from.land.use.change.and.forestry, color = Entity)) + 
+carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = CO2.emissions, color = Entity)) +
   geom_point()+ 
   geom_smooth(method = lm)+ 
   labs(x= "Years", y = "Carbon Dioxide Emissions (billion tonnes)", title = "Carbon Dioxide Emissions over the years")
@@ -116,64 +117,67 @@ carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = Greenhouse.ga
 \newpage
 
 # Analysis
-```{r}
+```{r, testing research question 1}
 #MULTIPLE LINEAR REGRESSION
+#checking best fit models through AIC 
+natural_AIC <- lm(data = dataset, Natural.Forest ~ Year + Oil.Palm)
+step(natural_AIC)
+
+planted_AIC <- lm(data = dataset, Planted.Forest ~ Year + Oil.Palm)
+step(planted_AIC)
+
+total_AIC <- lm(data = dataset, Total.Forest ~ Year + Oil.Palm)
+step(total_AIC)
+#include both oil palm and year, they have the lowest AIC 
+
 #Planted Forests in Indonesia 
-#oil_palm_ind <- lm(data = filter(dataset, Entity == "Indonesia") , Planted.Forest ~ Oil.Palm)
-#summary(oil_palm_ind)
-
-# #Total Forests in Indonesia
-# oil_palm_ind2 <- lm(data = filter(dataset, Entity == "Indonesia") , 
-#                   Total.Forest ~ Oil.Palm)
-# summary(oil_palm_ind2)
-# 
-# #Planted Forests in Malaysia 
-# oil_palm_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
-#                   Planted.Forest ~ Oil.Palm)
-# summary(oil_palm_mly)
-# 
-# #Total Forests in Malaysia
-# oil_palm_mly2 <- lm(data = filter(dataset, Entity == "Malaysia") , 
-#                   Total.Forest ~ Oil.Palm)
-# summary(oil_palm_mly2)
-
-#checking the explanatory variables for natural forest 
-AIC <- lm(data = dataset, Natural.Forest ~ Year + Oil.Palm)
-step(AIC)
-#include all - lowest AIC 
+planted_ind <- lm(data = filter(dataset, Entity == "Indonesia") , Planted.Forest ~ Oil.Palm + Year)
+summary(planted_ind)
 
 #Natural Forests in Indonesia 
-oil_palm_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
+natural_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
                   Total.Forest ~ Oil.Palm + Year)
-summary(oil_palm_ind)
+summary(natural_ind)
+
+#Total Forests in Indonesia
+total_ind <- lm(data = filter(dataset, Entity == "Indonesia") ,
+                  Total.Forest ~ Oil.Palm + Year)
+summary(total_ind)
+
+#Planted Forests in Malaysia
+planted_mly <- lm(data = filter(dataset, Entity == "Malaysia") ,
+                  Planted.Forest ~ Oil.Palm + Year)
+summary(planted_mly)
 
 #Natural Forests in Malaysia
-oil_palm_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+natural_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
                   Natural.Forest ~ Oil.Palm + Year)
-summary(oil_palm_mly)
+summary(natural_mly)
 
-#checking the explanatory variables for CO2 emissions and natural forest 
-AIC <- lm(data = dataset, Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
-step(AIC)
-#include All - lowest AIC 
+#Total Forests in Malaysia
+total_mly <- lm(data = filter(dataset, Entity == "Malaysia") ,
+                  Total.Forest ~ Oil.Palm + Year)
+summary(total_mly)
+```
 
-#MLR in CO2 with natural forests ~ low R2 
+```{r, testing reaseach question 2}
+#checking best fit models through AIC 
+co2_AIC <- lm(data = dataset, CO2.emissions ~ Year + Oil.Palm + Natural.Forest + Total.Forest + Planted.Forest)
+step(co2_AIC) 
+#model to be used is with year, oil palm and total forests - has the lowest AIC 
+
+#MLR checking for CO2 in Indonesia 
 CO2_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
-                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
+                  CO2.emissions ~ Total.Forest + Oil.Palm + Year)
 summary(CO2_ind)
 
+#MLR checking for CO2 in Malaysia
 CO2_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
-                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Natural.Forest + Oil.Palm + Year)
+                   CO2.emissions ~ Total.Forest + Oil.Palm + Year)
 summary(CO2_mly)
+```
 
-#testing CO2 with total forests ~ malaysia has an okay R2 
-co2_ind_test <- lm(data = filter(dataset, Entity == "Indonesia") , 
-                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Total.Forest + Oil.Palm + Year)
-summary(co2_ind_test)
 
-co2_mly_test <- lm(data = filter(dataset, Entity == "Malaysia") , 
-                  Greenhouse.gas.emissions.from.land.use.change.and.forestry ~ Total.Forest + Oil.Palm + Year)
-summary(co2_mly_test)
 ```
 
 ```{r}
@@ -192,7 +196,7 @@ plot(natural_forest_decomp_test)
 ```
 
 
-## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
+# Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
 
 ## Question 2: 
 

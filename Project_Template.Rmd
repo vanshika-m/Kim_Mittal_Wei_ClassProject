@@ -1,7 +1,7 @@
 ---
 title: "Impact of Oil Palm Production on Forest Cover and Carbon Emissions in Malaysia and Indonesia  "
 author: "Ayoung Kim, Queenie Wei, Vanshika Mittal"
-date: "Dec 10, 2023"
+date: "Dec 12, 2023"
 output: pdf_document
 geometry: margin=2.54cm
 toc: true
@@ -84,10 +84,11 @@ forest_area <- forest_area %>%
 
 #datasets on carbon emissions 
 carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
+#filtering for Indonesia and Malaysia, adjusting scales for co2 emissions variable
 carbon_emissions <- carbon_emissions %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
-  dplyr::select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)%>%
-  rename(CO2.emissions = Greenhouse.gas.emissions.from.land.use.change.and.forestry)
+  mutate(CO2.emissions = Greenhouse.gas.emissions.from.land.use.change.and.forestry/1000000)%>%
+  dplyr::select(Entity, Year, CO2.emissions)
 ```
 
 ```{r}
@@ -111,23 +112,23 @@ dataset <- dataset %>%
 ```
 
 # Rationale and Research Questions
-
-The oil palm tree is a productive and useful crop, as it can be cultivated at a lower price, providing high-quality oil (WWF, n.d.). It can be used not only as food but for other purposes, such as in making detergents/ cosmetics and for bioenergy (Ritchie, 2021). Therefore, the oil palm industry has been expanding rapidly, particularly across Asia, Africa, and Latin America (WWF, n.d.). For example, the yield increased from 2 million tonnes in 1970 to 71 million tonnes in 2018 (Ritchie, 2021). According to the Food and Agriculture Organization of the United Nations, Indonesia and Malaysia produced 57% and 27% of global production respectively (Richie, 2021). However, the expansion of the industry is having negative impacts on the environment, becoming one of the major contributors to deforestation, carbon emissions, and tropical biodiversity loss around the world (WWF, n.d.). In this project, we will explore the oil palm cultivation industry in Indonesia and Malaysia. We want to measure “How the cultivation of oil palm contributed to deforestation and carbon emissions in Indonesia and Malaysia from 2000 to 2020.” The H0 of this project is “The cultivation of oil pam has not significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. Ha is “The cultivation of oil palm has significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. To investigate the effects of palm oil cultivation on deforestation and CO2 emissions, we collected data on oil palm production, forest area data to investigate the land cover change, and the CO2 emissions datasets in Indonesia and Malaysia from 2000 to 2022.
-
+>The oil palm tree is a productive and useful crop, as it can be cultivated at a lower price, providing high-quality oil (WWF, n.d.). It is used not only as food but for other purposes, such as in detergents/ cosmetics and for bioenergy (Ritchie, 2021). This has led to a rapid expansion in the oil palm industry, particularly across Asia, Africa, and Latin America (WWF, n.d.). For example, the yield increased from 2 million tonnes in 1970 to 71 million tonnes in 2018 (Ritchie, 2021). According to the Food and Agriculture Organization of the United Nations, Indonesia and Malaysia contributed to 57% and 27% of global production respectively (Richie, 2021). However, the expansion of the industry has been linked to some negative impacts on the environment, becoming one of the major contributors to deforestation, carbon emissions, and tropical biodiversity loss (WWF, n.d.). 
+>In this project, we will explore the oil palm cultivation industry in Indonesia and Malaysia. We want to measure how the cultivation of oil palm has contributed to deforestation and carbon emissions in the two countries from 1990 to 2020.” 
+>H0: The cultivation of oil pam has not significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. 
+>Ha: The cultivation of oil palm has significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. 
 
 \newpage
 
 # Dataset Information
+>Firstly, we utilized the 'palm_production' dataset from 'Our World In Data' to analyze the changes in the oil palm industry. This dataset includes information on the country and continent, year, and the amount of production in tonnes. Initially, we selected the entities (country names), year, and 'Palm.oil...00000257....Production...005510....tonnes', representing the production quantity. We then used the 'filter' function to narrow down the data to Indonesia and Malaysia.For the analysis of land coverage, we obtained the forest area dataset from ‘Our World in Data’. This dataset comprises six variables: country name, country code, year (date), indicator name, indicator code, and indicator value in number. We filtered the data using 'AG.LND.FRST.K2' as the indicator code and selected country name, year (date), and the indicator value in number. The carbon emissions data for both Indonesia and Malaysia, titled 'ghg-emissions-by-sector_indonesia' from Our World in Data, provides information on greenhouse gas emissions from various sectors such as agriculture, land use change and forestry, waste, buildings, industry, manufacturing and construction, transport, electricity and heat, fugitive emissions of greenhouse gases from energy production, and greenhouse gas emissions from fuel combustion and bunker fuels. We employed the 'filter' function to extract data specifically for Indonesia and Malaysia, selecting 'Entity' (country name), 'year', and 'Greenhouse.gas.emissions.from.land.use.change.and.forestry' from the 'carbon_emissions' dataset.
 
-Firstly, we utilized the 'palm_production' dataset from 'Our World In Data' to analyze the changes in the oil palm industry. This dataset includes information on the country and continent, year, and the amount of production in tonnes. Initially, we selected the entities (country names), year, and 'Palm.oil...00000257....Production...005510....tonnes', representing the production quantity. We then used the 'filter' function to narrow down the data to Indonesia and Malaysia.For the analysis of land coverage, we obtained the forest area dataset from ‘Our World in Data’. This dataset comprises six variables: country name, country code, year (date), indicator name, indicator code, and indicator value in number. We filtered the data using 'AG.LND.FRST.K2' as the indicator code and selected country name, year (date), and the indicator value in number. The carbon emissions data for both Indonesia and Malaysia, titled 'ghg-emissions-by-sector_indonesia' from Our World in Data, provides information on greenhouse gas emissions from various sectors such as agriculture, land use change and forestry, waste, buildings, industry, manufacturing and construction, transport, electricity and heat, fugitive emissions of greenhouse gases from energy production, and greenhouse gas emissions from fuel combustion and bunker fuels. We employed the 'filter' function to extract data specifically for Indonesia and Malaysia, selecting 'Entity' (country name), 'year', and 'Greenhouse.gas.emissions.from.land.use.change.and.forestry' from the 'carbon_emissions' dataset.
 
-
-| Data  | Name                               | Structure             |
+| Data  | Name                               | Variables of Interest            |
 |-----------:|:-------------------------------------:|:--------------------------|
-| Oil Palm Production  | palm-oil-production.csv  | Entity, Code, Year, Palm.oil...00000257....Production...005510....tonnes |
-| Forest Area 1 | environment_idn.csv             | X.country.name, X.country.code, X.date.year, X.indicator.name, X.indicator.code, X.indicator.value.num |
-| Forest Area 2 | environment_mys.csv             | Country Name, Country ISO3, Year, Indicator Name, Indicator Code, Value | 
-| Carbon Emissions  | ghg-emissions-by-sector_indonesia.csv |   Greenhouse.gas.emissions .from.agriculture, Greenhouse. gas emissions.from.land.use .change.and.forestry, Greenhouse.gas.emissions. from.waste, Greenhouse.gas.emissions .from. buildings , Greenhouse.gas.emissions .from. Industry,Greenhouse.gas.emissions .from. Manufacturing.and. Construction,Greenhouse.gas.emissions .from. Transport,Greenhouse.gas.emissions .from. Electricity.and.heat,Fugitive.emissions.of. Greenhouse. gases. From. Energy.production,Greenhouse.gas.emissions .from.other.fuel.combustion,Greenhouse.gas.emissions .from.bunker.fuels   |
+| Oil Palm Production  | palm-oil-production.csv  | Entity, Year, Palm.oil...00000257....Production...005510....tonnes |
+| Primary Forests | forest-area-primary-planted.csv  | Entity, Year, Planted.Forest...00006716....Area...005110....hectares |
+| Natural Forests | forest-area-primary-planted.csv   | Entity, Year, Naturally.regenerating.forest...00006717....Area...005110....hectares | 
+| Carbon Emissions  | ghg-emissions-by-sector_indonesia.csv | Entity, Year,  Greenhouse. gas emissions.from.land.use .change.and.forestry |
 
 \newpage
 

@@ -46,8 +46,10 @@ library(agricolae)
 library(rvest)
 library(vctrs)
 library(mapview)
-
-
+library(dplyr)
+library(tseries)
+#install.packages("forecast")
+library(trend)
 # Set your ggplot theme
 mytheme<-theme_classic(base_size=13)+
 theme(
@@ -67,7 +69,7 @@ palm_production <-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
 palm_production <- palm_production %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))%>%
   mutate(Oil.Palm = Palm.oil...00000257....Production...005510....tonnes/1000) %>%
-  select(Entity, Year, Oil.Palm)
+  dplyr::select(Entity, Year, Oil.Palm)
   
 #dataset on forest area 
 forest_area <- read.csv("./forest-area-primary-planted.csv",stringsAsFactors = TRUE)
@@ -78,13 +80,13 @@ forest_area <- forest_area %>%
            Planted.Forest...00006716....Area...005110....hectares/1000000 ) %>%
   mutate(Natural.Forest = 
            Naturally.regenerating.forest...00006717....Area...005110....hectares/1000000)%>%
-  select(Entity, Year, Planted.Forest, Natural.Forest)
+  dplyr::select(Entity, Year, Planted.Forest, Natural.Forest)
 
 #datasets on carbon emissions 
 carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
 carbon_emissions <- carbon_emissions %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
-  select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)%>%
+  dplyr::select(Entity, Year, Greenhouse.gas.emissions.from.land.use.change.and.forestry)%>%
   rename(CO2.emissions = Greenhouse.gas.emissions.from.land.use.change.and.forestry)
 ```
 
@@ -218,7 +220,7 @@ summary(CO2_mly)
 ```
 
 
-```
+
 
 ```{r}
 dataset_ind <- dataset %>%
@@ -227,12 +229,44 @@ dataset_ind <- dataset %>%
 dataset_ind$Date <- ymd(dataset_ind$Date)
 
 #TIME SERIES ANALYSIS 
-natural_forest_ts <- ts(dataset_ind$Natural.Forest, start = c(1990,01,01))
-natural_forest_decomp <- stl(natural_forest_ts, s.window = "periodic")
-plot(natural_forest_decomp)
+##create ts object
+natural_forest_ind_ts <- ts(dataset_ind$Natural.Forest, start = c(1990,01,01), frequency = 1)
+#run a mann-kendall test on this data
+mk.test(natural_forest_ind_ts)
+##plot the data
+natural_forest_ind_plot <-
+ggplot(dataset_ind, aes(x = Date, y = Natural.Forest)) +
+  geom_point() +
+  geom_line() +
+  ylab("Natural Forest (million ha)") +
+  xlab("Year") +
+  geom_smooth(method = lm ) +
+  labs(title = "Natural Forest in Indonesia") +
+  mytheme
+print(natural_forest_ind_plot)
 
-natural_forest_decomp_test <- decompose(natural_forest_ts)
-plot(natural_forest_decomp_test)
+
+##repeat the same for Malaysia
+dataset_mly <- dataset %>%
+  subset(Entity == "Malaysia") %>%
+  mutate(Date = paste(Year, "-", 01, "-", 01))
+dataset_mly$Date <- ymd(dataset_mly$Date)
+##create ts object
+natural_forest_mly_ts <- ts(dataset_mly$Natural.Forest, start = c(1990,01,01), frequency = 1)
+#run a mann-kendall test on this data
+mk.test(natural_forest_mly_ts)
+##plot the data
+natural_forest_mly_plot <-
+ggplot(dataset_mly, aes(x = Date, y = Natural.Forest)) +
+  geom_point() +
+  geom_line() +
+  ylab("Natural Forest (million ha)") +
+  xlab("Year") +
+  geom_smooth(method = lm ) +
+  labs(title = "Natural Forest in Malaysia") +
+  mytheme
+print(natural_forest_mly_plot)
+
 ```
 
 \newpage

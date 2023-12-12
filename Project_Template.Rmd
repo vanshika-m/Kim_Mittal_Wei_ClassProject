@@ -92,16 +92,6 @@ carbon_emissions <- carbon_emissions %>%
 ```
 
 ```{r}
-#Data set on global prices (extra)
-global_price <-read.csv("./Global price of palm oil.csv",stringsAsFactors = TRUE)
-global_price$DATE <- ymd(global_price$DATE)
-global_price_graph <- ggplot(global_price, aes(x= DATE, y = PPOILUSDM))+
-  geom_point()+
-  geom_smooth(method = lm)+
-   labs(x= "Years", y = "Global Price Levels", title = "Plam Oil Global Price Trends")
-```
-
-```{r}
 #merge the datasets into one for analysis 
 merged_dataset <- merge(palm_production, forest_area, by = c("Entity", "Year"), 
                  all = TRUE)
@@ -141,6 +131,8 @@ palm_production_graph <- ggplot(palm_production, aes(x=Year, y = Oil.Palm, color
   geom_point()+ 
   geom_smooth(method = lm)+ 
   labs(x= "Years", y = "Palm Oil Production (Thousand Tonnes)", title = "Palm Production in Indonesia and Malaysia over the years")
+
+palm_production_graph
   
 #graphing the data on forest area 
 forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
@@ -150,12 +142,15 @@ forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
                     labs(x= "Years", y = "Forest Area (Million Hectares)", title = 
                            "Forest Area over the years")
 
+forest_area_graph
+
 #graphing dataset on carbon emissions 
 carbon_emissions_graph <- ggplot(carbon_emissions, aes(x=Year, y = CO2.emissions, color = Entity)) +
   geom_point()+ 
   geom_smooth(method = lm)+ 
-  labs(x= "Years", y = "Carbon Dioxide Emissions (Billion tonnes)", title = "Carbon Dioxide Emissions over the years")
+  labs(x= "Years", y = "Carbon Dioxide Emissions (Million tonnes)", title = "Carbon Dioxide Emissions over the years")
 
+carbon_emissions_graph
 ```
 \newpage
 
@@ -220,8 +215,10 @@ CO2_mly <- lm(data = filter(dataset, Entity == "Malaysia") ,
 summary(CO2_mly)
 ```
 
-
-
+#Carbon Emissions Explanation
+> CO2.emissions which is our variable of interest in the release of carbon emissions through land use change and forestry. We fee this is best suited for our analysis as the variable carbon emissions from agriculture explains emissions from livestock. To begin the analysis, we first use the AIC to gauge which variables best impact carbon dioxide emissions. The lowest AIC from this stepwise regression suggests that we use Total Forests (inluding natural and planted growth), Oil Palm cultivation and year. This suggests that planted forests too impact carbon emissions which makes for a positive argument in support of their credibility. 
+>The MLR for Indonesia reports a very low R squared(3.96%). We see a negative correlation between carbon emissions and total forests (-0.21) and year(-17.77) with the former having a smaller impact than the later. As expected, carbon emissions increase with oil palm cultivation (0.013). 
+> The MLR for Malaysia reports an R squared of 60.83%. We see a large negative coorelation between carbon emissions and total forests (-199.5). Surprisingly, oil palm cultivation too has an inverse relationship with carbon emissions in Malaysia (-0.04) while it is a relatively smaller number. 
 
 ```{r}
 dataset_ind <- dataset %>%

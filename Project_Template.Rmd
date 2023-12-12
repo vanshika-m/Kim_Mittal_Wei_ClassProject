@@ -14,18 +14,14 @@ toc: true
 | 1   | Palm Production                       |
 | 2   | Forest Area                           |
 | 3   | Carbon Emissions                      |
-| 4   | Global Price                          |
 
 : List of Tables 
 
-
-
 | Figures  | Name                             |
 |-----------:|:-------------------------------------|
-| 1    | Global Price                         |
-| 2    | Palm Production                      |
-| 3    | Forest Area                          |
-| 4    | Carbon Emissions                     |
+| 1    | Palm Production                      |
+| 2    | Forest Area                          |
+| 3    | Carbon Emissions                     |
 
 : List of Figures
 
@@ -277,6 +273,10 @@ print(natural_forest_mly_plot)
 # References
 World Wildlife Fund. (n.d.). Palm oil. World Wildlife Fund. https://www.worldwildlife.org/industries/palm-oil
 
-Ritchie, H. (2021, February 4). Palm oil. Our World in Data. https://ourworldindata.org/palm-oil
+Ritchie, H. (2021). Palm oil. Our World in Data. https://ourworldindata.org/palm-oil
+
+Ritchie, H, Rosado, P and Roser, M (2020). Emissions by sector: where do GHGs come from?.Our World in Data. https://ourworldindata.org/emissions-by-sector
+
+Ritchie, H. (2021). Forest Area. Our World in Data. https://ourworldindata.org/forest-area 
 
 

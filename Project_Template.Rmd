@@ -109,12 +109,12 @@ dataset <- dataset %>%
 >Firstly, we utilized the 'palm_production' dataset from 'Our World In Data' to analyze the changes in the oil palm industry. This dataset includes information on the country and continent, year, and the amount of production in tonnes. Initially, we selected the entities (country names), year, and 'Palm.oil...00000257....Production...005510....tonnes', representing the production quantity. We then used the 'filter' function to narrow down the data to Indonesia and Malaysia.For the analysis of land coverage, we obtained the forest area dataset from ‘Our World in Data’. This dataset comprises six variables: country name, country code, year (date), indicator name, indicator code, and indicator value in number. We filtered the data using 'AG.LND.FRST.K2' as the indicator code and selected country name, year (date), and the indicator value in number. The carbon emissions data for both Indonesia and Malaysia, titled 'ghg-emissions-by-sector_indonesia' from Our World in Data, provides information on greenhouse gas emissions from various sectors such as agriculture, land use change and forestry, waste, buildings, industry, manufacturing and construction, transport, electricity and heat, fugitive emissions of greenhouse gases from energy production, and greenhouse gas emissions from fuel combustion and bunker fuels. We employed the 'filter' function to extract data specifically for Indonesia and Malaysia, selecting 'Entity' (country name), 'year', and 'Greenhouse.gas.emissions.from.land.use.change.and.forestry' from the 'carbon_emissions' dataset.
 
 
-| Data  | Name                               | Variables of Interest            |
-|-----------:|:-------------------------------------:|:--------------------------|
-| Oil Palm Production  | palm-oil-production.csv  | Entity, Year, Palm.oil...00000257....Production...005510....tonnes |
-| Primary Forests | forest-area-primary-planted.csv  | Entity, Year, Planted.Forest...00006716....Area...005110....hectares |
-| Natural Forests | forest-area-primary-planted.csv   | Entity, Year, Naturally.regenerating.forest...00006717....Area...005110....hectares | 
-| Carbon Emissions  | ghg-emissions-by-sector_indonesia.csv | Entity, Year,  Greenhouse. gas emissions.from.land.use .change.and.forestry |
+| Data  | Name                               | Soure   |  Variables of Interest            |
+|-----------:|:-------------------------------------:|:--------------------------:|:---------------|
+| Oil Palm Production  | palm-oil-production.csv  |food and agriculture 2020 | Entity, Year, Palm.oil...00000257....Production...005510....tonnes |
+| Primary Forests | forest-area-primary-planted.csv  | food and agriculture 2020 |Entity, Year, Planted.Forest...00006716....Area...005110....hectares |
+| Natural Forests | forest-area-primary-planted.csv   | food and agriculture 2020 | Entity, Year, Naturally.regenerating.forest...00006717....Area...005110....hectares | 
+| Carbon Emissions  | ghg-emissions-by-sector_indonesia.csv | climate watch 2033 | Entity, Year,  Greenhouse. gas emissions.from.land.use .change.and.forestry |
 
 \newpage
 

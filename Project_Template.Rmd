@@ -60,7 +60,7 @@ legend.text = element_text(size=11)
 # Load your datasets
 ```{r}
 #dataset on palm cultivation 
-palm_production <-read.csv("./palm-oil-production.csv",stringsAsFactors = TRUE)
+palm_production <-read.csv("./Raw /palm-oil-production.csv",stringsAsFactors = TRUE)
 #filtering for only Indonesia and Malaysia, making a new column with an adjusted scale for oil palm cultivation 
 palm_production <- palm_production %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))%>%
@@ -68,7 +68,7 @@ palm_production <- palm_production %>%
   dplyr::select(Entity, Year, Oil.Palm)
   
 #dataset on forest area 
-forest_area <- read.csv("./forest-area-primary-planted.csv",stringsAsFactors = TRUE)
+forest_area <- read.csv("./Raw /forest-area-primary-planted.csv",stringsAsFactors = TRUE)
 #filtering for Indonesia and Malaysia, adjusting scales for planted and natural forests
 forest_area <- forest_area %>%
   filter(Entity == "Indonesia" | Entity == "Malaysia") %>%
@@ -79,7 +79,7 @@ forest_area <- forest_area %>%
   dplyr::select(Entity, Year, Planted.Forest, Natural.Forest)
 
 #datasets on carbon emissions 
-carbon_emissions <- read.csv("./ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
+carbon_emissions <- read.csv("./Raw /ghg-emissions-by-sector_indonesia.csv", stringsAsFactors = TRUE)
 #filtering for Indonesia and Malaysia, adjusting scales for co2 emissions variable
 carbon_emissions <- carbon_emissions %>%
   filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
@@ -131,11 +131,14 @@ palm_production_graph <- ggplot(palm_production, aes(x=Year, y = Oil.Palm, color
 palm_production_graph
   
 #graphing the data on forest area 
-forest_area_graph <- ggplot(forest_area, aes(x=Year)) +
-                     geom_line(aes(y = Planted.Forest), color = "green") + 
-                     geom_line(aes(y = Natural.Forest, color = "red")) + 
-                    facet_wrap(vars(Entity))+
-                    labs(x= "Years", y = "Forest Area (Million Hectares)", title = 
+forest_area_graph <- ggplot(forest_area, aes(x = Year)) +
+  geom_line(aes(y = Planted.Forest, color = "green")) + 
+  geom_line(aes(y = Natural.Forest, color = "red")) +
+  scale_color_manual(name = "Forest Type", 
+  values = c("green" = "green", "red" = "red"),
+ labels = c("Planted Forest", "Natural Forest"))+
+  facet_wrap(vars(Entity))+
+  labs(x= "Years", y = "Forest Area (Million Hectares)", title = 
                            "Forest Area over the years")
 
 forest_area_graph

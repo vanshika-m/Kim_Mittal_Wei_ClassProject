@@ -1,0 +1,304 @@
+---
+title: "Impact of Oil Palm Production on Forest Cover and Carbon Emissions in Malaysia and Indonesia  "
+author: "Ayoung Kim, Queenie Wei, Vanshika Mittal"
+date: "Dec 12, 2023"
+output: pdf_document
+geometry: margin=2.54cm
+toc: true
+---
+
+\newpage
+
+| Figures  | Name                             |
+|-----------:|:-------------------------------------|
+| 1    | Palm Production in Malaysia and Indonesia over the years |
+| 2    | Forest Area in Malaysia and Indonesia over the years     |
+| 3    | Carbon Emissions in Malaysia and Indonesia over the year |
+| 4    | Natural Forests in Indonesia                             |
+| 5    | Natural Forests in Malaysia                              | 
+
+: List of Figures
+
+\newpage
+
+```{r setup, include=FALSE}
+# Set your working directory
+getwd()
+# Load your packages
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(raster)
+library(here)
+library(sf)
+library(leaflet)
+library(agricolae)
+library(rvest)
+library(vctrs)
+library(mapview)
+library(dplyr)
+library(tseries)
+#install.packages("forecast")
+library(trend)
+# Set your ggplot theme
+mytheme<-theme_classic(base_size=13)+
+theme(
+legend.background = element_rect(color='grey',fill='beige'),
+plot.title=element_text(color='black',size=15),
+legend.position="right",
+legend.text = element_text(size=11)
+)
+
+theme_set(mytheme)
+```
+
+# Loading the Datasets 
+```{r}
+#dataset on palm cultivation 
+palm_production <-read.csv("./Raw /palm-oil-production.csv",
+                           stringsAsFactors = TRUE)
+#wrandling the dataset
+palm_production <- palm_production %>%
+  filter(Entity == "Indonesia"| Entity == "Malaysia", Year %in% (1990:2020))%>%
+  mutate(Oil.Palm = Palm.oil...00000257....Production...005510....tonnes/1000) %>%
+  dplyr::select(Entity, Year, Oil.Palm)
+  
+#dataset on forest area 
+forest_area <- read.csv("./Raw /forest-area-primary-planted.csv",
+                        stringsAsFactors = TRUE)
+#wrandling the dataset
+forest_area <- forest_area %>%
+  filter(Entity == "Indonesia" | Entity == "Malaysia") %>%
+  mutate(Planted.Forest = 
+           Planted.Forest...00006716....Area...005110....hectares/1000000 ) %>%
+  mutate(Natural.Forest = 
+           Naturally.regenerating.forest...00006717....Area...005110....hectares
+         /1000000)%>%
+  dplyr::select(Entity, Year, Planted.Forest, Natural.Forest)
+
+#datasets on carbon emissions 
+carbon_emissions <- read.csv("./Raw /ghg-emissions-by-sector_indonesia.csv", 
+                             stringsAsFactors = TRUE)
+#wrandling the dataset
+carbon_emissions <- carbon_emissions %>%
+  filter(Entity == "Indonesia"| Entity == "Malaysia")%>%
+  mutate(CO2.emissions = 
+           Greenhouse.gas.emissions.from.land.use.change.and.forestry/1000000)%>%
+  dplyr::select(Entity, Year, CO2.emissions)
+```
+
+```{r}
+#merge the datasets into one for analysis 
+merged_dataset <- merge(palm_production, forest_area, by = c("Entity", "Year"), 
+                 all = TRUE)
+dataset <- merge(merged_dataset, carbon_emissions, by = c("Entity", "Year"), 
+                 all = TRUE)
+dataset <- dataset %>%
+  mutate(Total.Forest = Planted.Forest + Natural.Forest)
+```
+
+\newpage
+# Rationale and Research Questions
+>The oil palm tree is a productive and useful crop, as it can be cultivated at a lower price, providing high-quality oil (WWF, n.d.). It is used not only as food but for other purposes, such as in detergents/ cosmetics and for bioenergy (Ritchie, 2021). This has led to a rapid expansion in the oil palm industry, particularly across Asia, Africa, and Latin America (WWF, n.d.). For example, the yield increased from 2 million tonnes in 1970 to 71 million tonnes in 2018 (Ritchie, 2021). According to the Food and Agriculture Organization of the United Nations, Indonesia and Malaysia contributed to 57% and 27% of global production respectively (Richie, 2021). However, the expansion of the industry has been linked to some negative impacts on the environment, becoming one of the major contributors to deforestation, carbon emissions, and tropical biodiversity loss (WWF, n.d.). 
+>In this project, we will explore the oil palm cultivation industry in Indonesia and Malaysia. We want to measure how the cultivation of oil palm has contributed to deforestation and carbon emissions in the two countries from 1990 to 2020.” 
+>H0: The cultivation of oil pam has not significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. 
+>Ha: The cultivation of oil palm has significantly changed forest cover (carbon emissions) in Indonesia and Malaysia. 
+
+# Dataset Information
+> After loading the datasets, we filter for Indonesia and Malaysia and then create a new column for adjusted scales of the interested variables. Provided below is a breakdown of our datasets. 
+
+| Data  | Name                               | Soure   |  Variables of Interest            |
+|-----------:|:-------------------------------------:|:--------------------------:|:---------------|
+| Oil Palm Production  | palm-oil-production.csv  |Food and Agriculture 2020 | Entity, Year, Palm.oil...00000257....Production...005510....tonnes |
+| Primary Forests | forest-area-primary-planted.csv  | Food and Agriculture 2020 |Entity, Year, Planted.Forest...00006716....Area...005110....hectares |
+| Natural Forests | forest-area-primary-planted.csv   | Food and Agriculture 2020 | Entity, Year, Naturally.regenerating.forest...00006717....Area...005110....hectares | 
+| Carbon Emissions  | ghg-emissions-by-sector_indonesia.csv | Climate Watch 2033 | Entity, Year,  Greenhouse. gas emissions.from.land.use .change.and.forestry |
+
+\newpage
+
+# Exploratory Analysis 
+
+```{r}
+#plotting oil palm cultivation over the years to see the trend 
+options(scipen = 999)
+palm_production_graph <- ggplot(palm_production, 
+                                aes(x=Year, y = Oil.Palm, color = Entity)) + 
+  geom_point()+ 
+  geom_smooth(method = lm)+ 
+  labs(x= "Years", y = "Palm Oil Production (Thousand Tonnes)", 
+       title = 
+         "Figure 1: Palm Production in Indonesia and Malaysia over the years")
+
+palm_production_graph
+  
+#graphing the data on forest area 
+forest_area_graph <- ggplot(forest_area, aes(x = Year)) +
+  geom_line(aes(y = Planted.Forest, color = "green")) + 
+  geom_line(aes(y = Natural.Forest, color = "red")) +
+  scale_color_manual(name = "Forest Type", 
+  values = c("green" = "green", "red" = "red"),
+ labels = c("Planted Forest", "Natural Forest"))+
+  facet_wrap(vars(Entity))+
+  labs(x= "Years", y = "Forest Area (Million Hectares)", title = 
+              "Figure 2: Forest Area in Indoensia and Malaysia over the years")
+
+forest_area_graph
+
+#graphing dataset on carbon emissions 
+carbon_emissions_graph <- ggplot(carbon_emissions, 
+                                 aes(x=Year, y = CO2.emissions, color = Entity)) +
+  geom_point()+ 
+  geom_smooth(method = lm)+ 
+  labs(x= "Years", y = "Carbon Dioxide Emissions (Million tonnes)", 
+       title = 
+"Figure 3: Carbon Dioxide Emissions in Indonesia and Malaysia over the years")
+
+carbon_emissions_graph
+```
+\newpage
+
+# Analysis
+```{r, testing research question 1}
+#MULTIPLE LINEAR REGRESSION
+#checking best fit models through AIC 
+natural_AIC <- lm(data = dataset, Natural.Forest ~ Year + Oil.Palm)
+step(natural_AIC)
+
+planted_AIC <- lm(data = dataset, Planted.Forest ~ Year + Oil.Palm)
+step(planted_AIC)
+
+total_AIC <- lm(data = dataset, Total.Forest ~ Year + Oil.Palm)
+step(total_AIC)
+#include both oil palm and year, they have the lowest AIC 
+
+#Planted Forests in Indonesia 
+planted_ind <- lm(data = filter(dataset, Entity == "Indonesia") ,
+                  Planted.Forest ~ Oil.Palm + Year)
+summary(planted_ind)
+
+#Natural Forests in Indonesia 
+natural_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
+                  Total.Forest ~ Oil.Palm + Year)
+summary(natural_ind)
+
+#Total Forests in Indonesia
+total_ind <- lm(data = filter(dataset, Entity == "Indonesia") ,
+                  Total.Forest ~ Oil.Palm + Year)
+summary(total_ind)
+
+#Planted Forests in Malaysia
+planted_mly <- lm(data = filter(dataset, Entity == "Malaysia") ,
+                  Planted.Forest ~ Oil.Palm + Year)
+summary(planted_mly)
+
+#Natural Forests in Malaysia
+natural_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+                  Natural.Forest ~ Oil.Palm + Year)
+summary(natural_mly)
+
+#Total Forests in Malaysia
+total_mly <- lm(data = filter(dataset, Entity == "Malaysia") ,
+                  Total.Forest ~ Oil.Palm + Year)
+summary(total_mly)
+```
+
+# Results and Discussions on Forest Area
+>By running linear regression models, we found that natural, planted, and total forest areas all have high r values (>0.90) for Indonesia, indicating that there is a high statistical significance in the high correlation between forest areas and oil palm production over the years. Oil palm production over the years can explain more than 90% of the forest cover change While total forest area and natural forest area have positive intercepts, planted forest has a negative coefficient for oil palm production. This may be because of practices that plant oil palm in natural forests. The reason for the negative coefficient for planted forests and oil palm production requires further investigation. Overall, we were able to reject the H0 and understand that oil palm production over time do contribute significantly to the forest cover change in Indonesia.
+
+>On the other hand, the coefficients for all three forest types and oil palm production are all negative, indicating that oil palm production negatively correlates with forests of all types for Malaysia. The r-squared values for planted and total forest areas are high (>0.8), and it is medium (0.59) for natural forests. Overall, there is a medium to high correlation between oil palm production and forest cover change in Malaysia (oil palm production over the years accounts for about 60% to 90% of forest cover change). Interestingly, total and natural forest cover have positive intercepts with oil palm production. This may also be because of practices that plant oil palm in natural forests. Overall, we were able to reject the H0 and understand that oil palm production over time do contribute significantly to the forest cover change in Malaysia.
+
+```{r, testing reaseach question 2}
+#checking best fit models through AIC 
+co2_AIC <- lm(data = dataset, CO2.emissions ~ Year + Oil.Palm + Natural.Forest + 
+                Total.Forest + Planted.Forest)
+step(co2_AIC) 
+#model to be used is with year, oil palm and total forests - has the lowest AIC 
+
+#MLR checking for CO2 in Indonesia 
+CO2_ind <- lm(data = filter(dataset, Entity == "Indonesia") , 
+                  CO2.emissions ~ Total.Forest + Oil.Palm + Year)
+summary(CO2_ind)
+
+#MLR checking for CO2 in Malaysia
+CO2_mly <- lm(data = filter(dataset, Entity == "Malaysia") , 
+                   CO2.emissions ~ Total.Forest + Oil.Palm + Year)
+summary(CO2_mly)
+```
+
+# Results and Discussions on Carbon Dioxide Emissions 
+> CO2.emissions which is our variable of interest in the release of carbon emissions through land use change and forestry. We fee this is best suited for our analysis as the variable carbon emissions from agriculture explains emissions from livestock. To begin the analysis, we first use the AIC to gauge which variables best impact carbon dioxide emissions. The lowest AIC from this stepwise regression suggests that we use Total Forests (inluding natural and planted growth), Oil Palm cultivation and year. This suggests that planted forests too impact carbon emissions which makes for a positive argument in support of their credibility. 
+>The MLR for Indonesia reports a very low R squared(3.96%). We see a negative correlation between carbon emissions and total forests (-0.21) and year(-17.77) with the former having a smaller impact than the later. As expected, carbon emissions increase with oil palm cultivation (0.013). Due to the low significance, we fail to reject the H0 that oil palm production, time, and total forest area do not contribute significantly to the CO2 emission to in Indonesia. We believe this is due to a few factors. First, there are limitations to our measure of oil palm in that it is on the mass of oil palm production as opposed to the geographical area of oil palm production. Technology could change the relationship between oil palm production and deforestation. In addition, there are still many aspects of the oil palm industry as well as deforestation that is unregulated, which means that the two datasets do not reflect the actual values of oil palm production or deforestation.   
+> The MLR for Malaysia reports an R squared of 60.83%. The low p value in this analysis suggests a highly ignificant result (p value= 0.00001086). We see a large negative coorelation between carbon emissions and total forests (-199.5). Surprisingly, oil palm cultivation too has an inverse relationship with carbon emissions in Malaysia (-0.04) while it is a relatively smaller number. Due to the medium to high R squared value, we can semi-confidently reject the H0 and understand that oil palm production, time, and total forest area do contribute significantly to the CO2 emission to in Indonesia.
+
+
+```{r}
+dataset_ind <- dataset %>%
+  subset(Entity == "Indonesia") %>%
+  mutate(Date = paste(Year, "-", 01, "-", 01))
+dataset_ind$Date <- ymd(dataset_ind$Date)
+
+#TIME SERIES ANALYSIS 
+##create ts object
+natural_forest_ind_ts <- ts(dataset_ind$Natural.Forest, 
+                            start = c(1990,01,01), frequency = 1)
+#run a mann-kendall test on this data
+mk.test(natural_forest_ind_ts)
+##plot the data
+natural_forest_ind_plot <-
+ggplot(dataset_ind, aes(x = Date, y = Natural.Forest)) +
+  geom_point() +
+  geom_line() +
+  ylab("Natural Forest (million ha)") +
+  xlab("Year") +
+  geom_smooth(method = lm ) +
+  labs(title = "Figure 4: Natural Forest in Indonesia") 
+
+natural_forest_ind_plot
+
+##repeat the same for Malaysia
+dataset_mly <- dataset %>%
+  subset(Entity == "Malaysia") %>%
+  mutate(Date = paste(Year, "-", 01, "-", 01))
+dataset_mly$Date <- ymd(dataset_mly$Date)
+##create ts object
+natural_forest_mly_ts <- ts(dataset_mly$Natural.Forest,
+                            start = c(1990,01,01), frequency = 1)
+#run a mann-kendall test on this data
+mk.test(natural_forest_mly_ts)
+##plot the data
+natural_forest_mly_plot <-
+ggplot(dataset_mly, aes(x = Date, y = Natural.Forest)) +
+  geom_point() +
+  geom_line() +
+  ylab("Natural Forest (million ha)") +
+  xlab("Year") +
+  geom_smooth(method = lm ) +
+  labs(title = "Figure 5: Natural Forest in Malaysia") 
+
+natural_forest_mly_plot
+
+```
+
+\newpage
+# Results and Discussions on Time Series Analysis 
+>In the time-series analysis, we used natural forest data cover because natural forests are more important in terms of supporting biodiversity and providing ecosystem services. They are also able to store and capture more CO2 than planted forests. Since we only have annual data with no apparent seasonal trend, we opted to using Mann-Kendall test for the two countries' natural forest cover changes. 
+For Indonesia, we found that there is a strong statistical significance (p-value: 0.000000000000003112) of a strong downward trend (z: -7.8863) in the natural forest area in Indonesia.The -1 tau also confirms the strong downward trend.
+
+>Similarly, there is also a strong statistical significance (p-value: 0.0000000000007365) of a strong downward trend (z: -7.1725) in the natural forest area in Malaysia.The -0.910 tau also confirms the strong downward trend.
+
+# Summary and Conclusions
+>Overall, we found that using the best fit model, oil palm production as well as time and total forest cover contribute to a very small portion of CO2 emission from forestry and land-use change in Indonesia and more than half of the CO2 emission from forestry and land-use change in Malaysia. We were hence able to reject the null hypothesis for Malaysia and were not able to reject the null hypothesis for Indonesia on oil palm's contribution to forest cover.
+As for forest cover, we found that oil palm contributes significantly to forest cover change in both countries over the years. Hence, we can confidently reject the null hypothesis for both countries when it comes to oil palm production and forest cover change.
+
+\newpage
+
+# References
+World Wildlife Fund. (n.d.). Palm oil. World Wildlife Fund. https://www.worldwildlife.org/industries/palm-oil
+
+Ritchie, H. (2021). Palm oil. Our World in Data. https://ourworldindata.org/palm-oil
+
+Ritchie, H, Rosado, P and Roser, M (2020). Emissions by sector: where do GHGs come from?.Our World in Data. https://ourworldindata.org/emissions-by-sector
+
+Ritchie, H. (2021). Forest Area. Our World in Data. https://ourworldindata.org/forest-area 
+
+

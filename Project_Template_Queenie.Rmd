@@ -290,7 +290,7 @@ For Indonesia, we found that there is a strong statistical significance (p-value
 
 Similarly, there is also a strong statistical significance (p-value: 0.0000000000007365) of a strong downward trend (z: -7.1725) in the natural forest area in Malaysia.The -0.910 tau also confirms the strong downward trend.
 # Summary and Conclusions
-Overall, we found that using the best fit model, oil palm production as well as time and total forest cover contribute to a very small portion of CO2 emission from forestry and land-use change in Indonesia and more than half of the CO2 emission from forestry and land-use change in Malaysia. We were hence able to reject the null hypothesis for Malaysia and were not able to reject the null hypothesis for Indonesia on oil palm's contribution to forest cover.
+Overall, we found that using the best fit model, oil palm production as well as time and total forest cover contribute to a very small portion of CO2 emission from forestry and land-use change in Indonesia and more than half of the CO2 emission from forestry and land-use change in Malaysia. We were hence able to reject the null hypothesis for Malaysia and were not able to reject the null hypothesis for Indonesia on oil palm's contribution to CO2.
 As for forest cover, we found that oil palm contributes significantly to forest cover change in both countries over the years. Hence, we can confidently reject the null hypothesis for both countries when it comes to oil palm production and forest cover change.
 
 \newpage

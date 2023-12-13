@@ -61,7 +61,7 @@ Palm.oil...00000257....Production...005510....tonnes: Palm oil production in ton
 
 ## Scripts and code
 
-Git.ignore: exclude files in the working directory from the Git history. Ensures that files that are not tracked by Git remains untracked.
+Git.ignore: exclude files in the working directory from the Git history. Ensures that files that are not tracked by Git remains untracked. We also did not include any files in the processed folder as we did not feel the need to export files as the analysis are very quick and straight forward.
 
 ## Quality assurance/quality control
 
